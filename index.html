@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PayEasy</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            background: white;
+            max-width: 400px;
+            margin: 0 auto;
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+        }
+        h1 { color: #333; margin-bottom: 20px; }
+        .btn {
+            width: 100%;
+            padding: 15px;
+            margin: 10px 0;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        .btn:hover { background: #5568d3; }
+        .screen { display: none; }
+        .screen.active { display: block; }
+        .menu-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .menu-item {
+            padding: 30px 15px;
+            background: #f0f0f0;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+        }
+        .menu-item:hover { background: #e0e0e0; }
+        input, select {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+        #qrcode, #receiveQR { margin: 20px 0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Splash -->
+        <div class="screen active" id="splash">
+            <div style="font-size: 50px; margin: 20px 0;">₹</div>
+            <h1>PayEasy</h1>
+            <p>Complete Payment Solution</p>
+            <button class="btn" onclick="show('main')">Get Started</button>
+        </div>
+
+        <!-- Main Menu -->
+        <div class="screen" id="main">
+            <h1>PayEasy</h1>
+            <div class="menu-grid">
+                <div class="menu-item" onclick="show('transfer')">💸<br>Money Transfer</div>
+                <div class="menu-item" onclick="show('recharge')">📱<br>Recharge</div>
+                <div class="menu-item" onclick="show('qr')">📷<br>Scan & Pay</div>
+                <div class="menu-item" onclick="show('balanceCheck')">💰<br>Balance</div>
+                <div class="menu-item" onclick="show('history')">📜<br>History</div>
+                <div class="menu-item" onclick="show('receive')">📥<br>Receive</div>
+            </div>
+        </div>
+
+        <!-- Transfer -->
+        <div class="screen" id="transfer">
+            <h1>Money Transfer</h1>
+            <div class="menu-grid">
+                <div class="menu-item" onclick="show('mobile')">📱<br>To Mobile</div>
+                <div class="menu-item" onclick="show('bank')">🏦<br>To Bank</div>
+                <div class="menu-item" onclick="show('self')">🔄<br>To Self</div>
+            </div>
+            <button class="btn" onclick="show('main')">Back</button>
+        </div>
+
+        <!-- Mobile Transfer -->
+        <div class="screen" id="mobile">
+            <h1>Transfer to Mobile</h1>
+            <input type="tel" id="mob" placeholder="Mobile Number" maxlength="10">
+            <input type="number" id="mobamt" placeholder="Amount">
+            <button class="btn" onclick="proceed('mobamt')">Continue</button>
+            <button class="btn" onclick="show('transfer')">Back</button>
+        </div>
+
+        <!-- Bank Transfer -->
+        <div class="screen" id="bank">
+            <h1>Transfer to Bank</h1>
+            <input type="text" placeholder="Account Number">
+            <input type="text" placeholder="IFSC Code">
+            <input type="number" id="bankamt" placeholder="Amount">
+            <button class="btn" onclick="proceed('bankamt')">Continue</button>
+            <button class="btn" onclick="show('transfer')">Back</button>
+        </div>
+
+        <!-- Self Transfer -->
+        <div class="screen" id="self">
+            <h1>Transfer to Self</h1>
+            <select>
+                <option>Select Account</option>
+                <option>State Bank of India ****1234</option>
+                <option>HDFC Bank ****5678</option>
+                <option>ICICI Bank ****9012</option>
+                <option>Axis Bank ****3456</option>
+                <option>Punjab National Bank ****7890</option>
+                <option>Bank of Baroda ****2345</option>
+                <option>Canara Bank ****6789</option>
+                <option>Union Bank ****0123</option>
+                <option>Kotak Mahindra Bank ****4567</option>
+                <option>IndusInd Bank ****8901</option>
+            </select>
+            <input type="number" id="selfamt" placeholder="Amount">
+            <button class="btn" onclick="proceed('selfamt')">Continue</button>
+            <button class="btn" onclick="show('transfer')">Back</button>
+        </div>
+
+        <!-- Recharge -->
+        <div class="screen" id="recharge">
+            <h1>Recharge & Bills</h1>
+            <div class="menu-grid">
+                <div class="menu-item" onclick="show('mobRecharge')">📱<br>Mobile</div>
+                <div class="menu-item" onclick="show('fastag')">🚗<br>FASTag</div>
+                <div class="menu-item" onclick="show('electricity')">💡<br>Electricity</div>
+            </div>
+            <button class="btn" onclick="show('main')">Back</button>
+        </div>
+
+        <!-- Mobile Recharge -->
+        <div class="screen" id="mobRecharge">
+            <h1>Mobile Recharge</h1>
+            <input type="tel" placeholder="Mobile Number" maxlength="10">
+            <select>
+                <option>Select Operator</option>
+                <option>Airtel</option>
+                <option>Jio</option>
+                <option>Vi (Vodafone Idea)</option>
+                <option>BSNL</option>
+            </select>
+            <input type="number" id="rechamt" placeholder="Amount">
+            <button class="btn" onclick="proceed('rechamt')">Continue</button>
+            <button class="btn" onclick="show('recharge')">Back</button>
+        </div>
+
+        <!-- FASTag -->
+        <div class="screen" id="fastag">
+            <h1>FASTag Recharge</h1>
+            <input type="text" placeholder="Vehicle Number">
+            <select>
+                <option>Select Issuer Bank</option>
+                <option>State Bank of India</option>
+                <option>HDFC Bank</option>
+                <option>ICICI Bank</option>
+                <option>Axis Bank</option>
+                <option>Paytm Payments Bank</option>
+                <option>Kotak Mahindra Bank</option>
+                <option>Yes Bank</option>
+                <option>Federal Bank</option>
+                <option>IDFC First Bank</option>
+                <option>Equitas Small Finance Bank</option>
+                <option>Airtel Payments Bank</option>
+            </select>
+            <input type="number" id="fasamt" placeholder="Amount">
+            <button class="btn" onclick="proceed('fasamt')">Continue</button>
+            <button class="btn" onclick="show('recharge')">Back</button>
+        </div>
+
+        <!-- Electricity -->
+        <div class="screen" id="electricity">
+            <h1>Electricity Bill</h1>
+            <select>
+                <option>Select Electricity Board</option>
+                <option>MSEB Maharashtra</option>
+                <option>BSES Rajdhani (Delhi)</option>
+                <option>BSES Yamuna (Delhi)</option>
+                <option>TNEB Tamil Nadu</option>
+                <option>BESCOM Karnataka</option>
+                <option>UPPCL Uttar Pradesh</option>
+                <option>KSEB Kerala</option>
+                <option>MPEKVVCL Madhya Pradesh</option>
+                <option>WBSEDCL West Bengal</option>
+                <option>PSPCL Punjab</option>
+                <option>JBVNL Jharkhand</option>
+                <option>DHBVN Haryana</option>
+                <option>UHBVN Haryana</option>
+                <option>DGVCL Gujarat</option>
+                <option>TSSPDCL Telangana</option>
+                <option>APEPDCL Andhra Pradesh</option>
+            </select>
+            <input type="text" placeholder="Consumer Number">
+            <input type="number" id="elecamt" placeholder="Amount">
+            <button class="btn" onclick="proceed('elecamt')">Continue</button>
+            <button class="btn" onclick="show('recharge')">Back</button>
+        </div>
+
+        <!-- QR -->
+        <div class="screen" id="qr">
+            <h1>Scan & Pay</h1>
+            <div id="qrcode"></div>
+            <p style="font-size: 12px; color: #666; margin: 10px 0;">Scan with any UPI app</p>
+            <button class="btn" onclick="show('payment')">Enter Amount</button>
+            <button class="btn" onclick="show('main')">Back</button>
+        </div>
+
+        <!-- Balance Check Password -->
+        <div class="screen" id="balanceCheck">
+            <h1>Check Balance</h1>
+            <p style="margin: 20px 0;">Enter PIN to view balance</p>
+            <input type="password" id="balancePin" placeholder="Enter 4-digit PIN" maxlength="4">
+            <button class="btn" onclick="checkBalancePin()">View Balance</button>
+            <button class="btn" onclick="show('main')">Back</button>
+        </div>
+
+        <!-- Balance -->
+        <div class="screen" id="balance">
+            <h1>Wallet Balance</h1>
+            <div style="background: linear-gradient(135deg, #667eea, #764ba2); color: white; padding: 30px; border-radius: 15px; margin: 20px 0;">
+                <p>Available Balance</p>
+                <h1 style="color: white;">₹5,420.50</h1>
+            </div>
+            <button class="btn" onclick="show('main')">Back</button>
+        </div>
+
+        <!-- History -->
+        <div class="screen" id="history">
+            <h1>Transaction History</h1>
+            <div style="background: #f0f0f0; padding: 15px; border-radius: 10px; margin: 10px 0; text-align: left;">
+                <b>Mobile Recharge</b><br>
+                <small>Today, 2:30 PM</small>
+                <span style="float: right; color: red;">-₹299</span>
+            </div>
+            <div style="background: #f0f0f0; padding: 15px; border-radius: 10px; margin: 10px 0; text-align: left;">
+                <b>Money Received</b><br>
+                <small>Yesterday</small>
+                <span style="float: right; color: green;">+₹1,500</span>
+            </div>
+            <button class="btn" onclick="show('main')">Back</button>
+        </div>
+
+        <!-- Receive -->
+        <div class="screen" id="receive">
+            <h1>Receive Money</h1>
+            <div id="receiveQR"></div>
+            <p>UPI ID: <b>yourname@paytm</b></p>
+            <p style="font-size: 12px; color: #666; margin: 10px 0;">Share this QR or UPI ID to receive money</p>
+            <button class="btn" onclick="shareUPI()">Share UPI ID</button>
+            <button class="btn" onclick="show('main')">Back</button>
+        </div>
+
+        <!-- Payment -->
+        <div class="screen" id="payment">
+            <h1>Enter Amount</h1>
+            <input type="number" id="amount" placeholder="Enter Amount">
+            <button class="btn" onclick="show('method')">Continue</button>
+            <button class="btn" onclick="goBack()">Back</button>
+        </div>
+
+        <!-- Payment Method -->
+        <div class="screen" id="method">
+            <h1>Payment Method</h1>
+            <p>Amount: ₹<span id="amt">0</span></p>
+            <button class="btn" onclick="show('pin')">UPI</button>
+            <button class="btn" onclick="show('pin')">Debit Card</button>
+            <button class="btn" onclick="show('pin')">Net Banking</button>
+            <button class="btn" onclick="show('payment')">Back</button>
+        </div>
+
+        <!-- PIN -->
+        <div class="screen" id="pin">
+            <h1>Enter PIN</h1>
+            <input type="password" id="payPin" placeholder="Enter PIN" maxlength="6">
+            <button class="btn" onclick="processPayment()">Pay Now</button>
+            <button class="btn" onclick="show('method')">Back</button>
+        </div>
+
+        <!-- Loading -->
+        <div class="screen" id="loading">
+            <h1>Processing...</h1>
+            <p>Please wait</p>
+        </div>
+
+        <!-- Success -->
+        <div class="screen" id="success">
+            <div style="font-size: 60px; color: green;">✓</div>
+            <h1>Payment Done!</h1>
+            <h2 style="color: #667eea;">₹<span id="paidAmt">0</span></h2>
+            <p>TXN ID: <b id="txnId"></b></p>
+            <p id="txnTime" style="font-size: 12px; color: #666;"></p>
+            <button class="btn" onclick="downloadReceipt()">📥 Download Receipt</button>
+            <button class="btn" onclick="show('main')">Main Menu</button>
+        </div>
+    </div>
+
+    <script>
+        let qrGen = false;
+        let recQrGen = false;
+        let lastScreen = 'main';
+
+        function show(screen) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(screen).classList.add('active');
+            
+            if (screen === 'qr' && !qrGen) {
+                new QRCode(document.getElementById("qrcode"), {
+                    text: "upi://pay?pa=merchant@paytm&pn=PayEasyMerchant&cu=INR",
+                    width: 200, height: 200
+                });
+                qrGen = true;
+            }
+            
+            if (screen === 'receive' && !recQrGen) {
+                new QRCode(document.getElementById("receiveQR"), {
+                    text: "upi://pay?pa=yourname@paytm&pn=YourName&cu=INR",
+                    width: 200, height: 200
+                });
+                recQrGen = true;
+            }
+
+            if (screen === 'payment') lastScreen = 'qr';
+            if (screen === 'mobile' || screen === 'bank' || screen === 'self') lastScreen = screen;
+        }
+
+        function checkBalancePin() {
+            const pin = document.getElementById('balancePin').value;
+            if (!pin || pin.length !== 4) {
+                alert('Please enter 4-digit PIN');
+                return;
+            }
+            document.getElementById('balancePin').value = '';
+            show('balance');
+        }
+
+        function proceed(id) {
+            const amt = document.getElementById(id).value;
+            if (!amt || amt <= 0) {
+                alert('Enter valid amount');
+                return;
+            }
+            document.getElementById('amount').value = amt;
+            show('payment');
+        }
+
+        function goBack() {
+            show(lastScreen);
+        }
+
+        window.onload = function() {
+            if (window.location.search.includes('pay=1')) {
+                show('payment');
+            }
+        }
+
+        function processPayment() {
+            const amt = document.getElementById('amount').value;
+            const pin = document.getElementById('payPin').value;
+            
+            if (!amt) { alert('Enter amount'); return; }
+            if (!pin || pin.length < 4) { alert('Enter valid PIN'); return; }
+            
+            show('loading');
+            
+            setTimeout(() => {
+                const now = new Date();
+                const dateStr = now.toLocaleDateString('en-IN');
+                const timeStr = now.toLocaleTimeString('en-IN');
+                
+                document.getElementById('paidAmt').textContent = amt;
+                document.getElementById('amt').textContent = amt;
+                document.getElementById('txnId').textContent = 'TXN' + Date.now();
+                document.getElementById('txnTime').textContent = dateStr + ' ' + timeStr;
+                document.getElementById('payPin').value = '';
+                show('success');
+            }, 2000);
+        }
+
+        function shareUPI() {
+            const msg = "Pay me using UPI: yourname@paytm";
+            window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank');
+        }
+
+        function downloadReceipt() {
+            const amt = document.getElementById('paidAmt').textContent;
+            const txn = document.getElementById('txnId').textContent;
+            const time = document.getElementById('txnTime').textContent;
+            
+            const receipt = `
+━━━━━━━━━━━━━━━━━━━━━━
+   PAYEASY RECEIPT
+━━━━━━━━━━━━━━━━━━━━━━
+
+Transaction ID: ${txn}
+Date & Time: ${time}
+Amount Paid: ₹${amt}
+Status: SUCCESS ✓
+
+━━━━━━━━━━━━━━━━━━━━━━
+Thank you for using PayEasy!
+━━━━━━━━━━━━━━━━━━━━━━
+            `;
+            
+            const blob = new Blob([receipt], { type: 'text/plain' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `PayEasy_Receipt_${txn}.txt`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+            
+            alert('Receipt downloaded!');
+        }
+    </script>
+</body>
+</html>
